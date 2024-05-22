@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { User } from '../../interfaces/user-request.interface';
+import { UsersServiceService } from '../../services/users-service.service';
 
 @Component({
   selector: 'app-user-info-page',
@@ -7,9 +9,25 @@ import { Component, OnInit } from '@angular/core';
 })
 export class UserInfoPageComponent implements OnInit {
 
-  constructor() { }
+  private usersService = inject(UsersServiceService);
+  public userId = signal(1);
 
-  ngOnInit() {
+  public currentUser = signal<User | undefined>(undefined);
+  public userWasFound = signal(true);
+
+  ngOnInit(): void {
+    this.loadUser(this.userId())
   }
 
+  loadUser(id: number) {
+    if (id <= 0) return;
+
+    this.userId.set(id);
+    this.currentUser.set(undefined);
+
+    this.usersService.getUserById(id)
+      .subscribe(user => {
+        this.currentUser.set(user)
+      })
+  }
 }
